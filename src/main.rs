@@ -75,32 +75,26 @@ fn gravity(mut circle_query: Query<&mut Acceleration>, time: Res<Time>) {
 fn confine_circle_movement(
     window_query: Query<&Window, With<PrimaryWindow>>,
     mut circle_query: Query<&mut Transform>,
-    mut accel_query: Query<&mut Acceleration>,
 ) {
     if let Ok(mut circle_transform) = circle_query.get_single_mut() {
         let window = window_query.get_single().unwrap();
-        let x_min = 0. + CIRCLE_RADIUS;
+        let x_min = 0.0 + CIRCLE_RADIUS;
         let x_max = window.width() - CIRCLE_RADIUS;
-        let y_min = 0. + CIRCLE_RADIUS;
+        let y_min = 0.0 + CIRCLE_RADIUS;
         let y_max = window.height() - CIRCLE_RADIUS;
 
         let mut translation = circle_transform.translation;
-        let mut accel = accel_query.get_single_mut().unwrap();
 
         if translation.x < x_min {
             translation.x = x_min;
-            accel.horizontal = 0.;
         } else if translation.x > x_max {
             translation.x = x_max;
-            accel.horizontal = 0.;
         };
 
         if translation.y < y_min {
             translation.y = y_min;
-            accel.vertical = 0.;
         } else if translation.y > y_max {
             translation.y = y_max;
-            accel.vertical = 0.;
         };
 
         circle_transform.translation = translation;
