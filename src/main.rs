@@ -23,28 +23,20 @@ struct Acceleration {
     horizontal: f32,
 }
 
-fn spawn_camera(mut commands: Commands, window_query: Query<&Window, With<PrimaryWindow>>) {
-    let window = window_query
-        .get_single()
-        .expect("Failed to find primary window when spawning camera.");
-    commands.spawn(Camera2dBundle {
-        transform: Transform::from_xyz(window.width() / 2.0, window.height() / 2.0, 0.0),
-        ..default()
-    });
+fn spawn_camera(mut commands: Commands) {
+    commands.spawn(Camera2dBundle::default());
 }
 
 fn spawn_circle(
     mut commands: Commands,
-    window_query: Query<&Window, With<PrimaryWindow>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    let window = window_query.get_single().unwrap();
     commands.spawn((
         MaterialMesh2dBundle {
             mesh: meshes.add(shape::Circle::new(CIRCLE_RADIUS).into()).into(),
             material: materials.add(ColorMaterial::from(Color::PURPLE)),
-            transform: Transform::from_xyz(window.width() / 2., window.height() / 2., 0.),
+            transform: Transform::from_xyz(0., 0., 0.),
             ..default()
         },
         Circle {},
@@ -76,12 +68,12 @@ fn confine_circle_movement(
     window_query: Query<&Window, With<PrimaryWindow>>,
     mut circle_query: Query<&mut Transform>,
 ) {
-    if let Ok(mut circle_transform) = circle_query.get_single_mut() {
+    for mut circle_transform in circle_query.iter_mut() {
         let window = window_query.get_single().unwrap();
-        let x_min = 0.0 + CIRCLE_RADIUS;
-        let x_max = window.width() - CIRCLE_RADIUS;
-        let y_min = 0.0 + CIRCLE_RADIUS;
-        let y_max = window.height() - CIRCLE_RADIUS;
+        let x_min = window.width() / -2. + CIRCLE_RADIUS;
+        let x_max = window.width() / 2. - CIRCLE_RADIUS;
+        let y_min = window.height() / -2. + CIRCLE_RADIUS;
+        let y_max = window.height() / 2. - CIRCLE_RADIUS;
 
         let mut translation = circle_transform.translation;
 
@@ -96,7 +88,6 @@ fn confine_circle_movement(
         } else if translation.y > y_max {
             translation.y = y_max;
         };
-
         circle_transform.translation = translation;
     }
 }
