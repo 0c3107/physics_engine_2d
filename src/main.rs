@@ -11,6 +11,7 @@ fn main() {
         .add_plugin(CirclePlugin)
         .add_startup_system(spawn_camera)
         .add_system(cursor_force)
+        .add_system(move_in_monitor_space)
         .run();
 }
 
@@ -176,6 +177,21 @@ fn cursor_force(
                     accel.vertical += y_diff * CURSOR_FORCE;
                 }
             }
+        }
+    }
+}
+
+fn move_in_monitor_space(
+    mut circle_transform: Query<&mut Transform, With<Circle>>,
+    mut windowmoved_event_reader: EventReader<WindowMoved>,
+    mut last_position: Local<Vec2>,
+) {
+    for event in windowmoved_event_reader.iter() {
+        for mut transform in circle_transform.iter_mut() {
+            transform.translation.x -= (event.position.x as f32 - last_position.x) / 2.; // Not sure why this needs to be divided by 2 but otherwise the ball moves twice as far so
+            transform.translation.y += (event.position.y as f32 - last_position.y) / 2.;
+            last_position.x = event.position.x as f32; // Set x value as last val for next loop.
+            last_position.y = event.position.y as f32;
         }
     }
 }
