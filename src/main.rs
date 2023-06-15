@@ -11,6 +11,7 @@ fn main() {
         .add_system(circle_movement.after(confine_circle_movement))
         .add_system(confine_circle_movement)
         .add_system(gravity)
+        .add_system(reset_acceleration_on_wall_hit.before(confine_circle_movement))
         .run();
 }
 
@@ -66,7 +67,7 @@ fn gravity(mut circle_query: Query<&mut Acceleration>, time: Res<Time>) {
 
 fn confine_circle_movement(
     window_query: Query<&Window, With<PrimaryWindow>>,
-    mut circle_query: Query<&mut Transform>,
+    mut circle_query: Query<&mut Transform, With<Circle>>,
 ) {
     for mut circle_transform in circle_query.iter_mut() {
         let window = window_query.get_single().unwrap();
@@ -89,5 +90,26 @@ fn confine_circle_movement(
             translation.y = y_max;
         };
         circle_transform.translation = translation;
+    }
+}
+
+fn reset_acceleration_on_wall_hit(
+    window_query: Query<&Window, With<PrimaryWindow>>,
+    mut circle_query: Query<(&mut Acceleration, &Transform), With<Circle>>,
+) {
+    let window = window_query.get_single().unwrap();
+    let x_min = window.width() / -2. + CIRCLE_RADIUS;
+    let x_max = window.width() / 2. - CIRCLE_RADIUS;
+    let y_min = window.height() / -2. + CIRCLE_RADIUS;
+    let y_max = window.height() / 2. - CIRCLE_RADIUS;
+
+    for (mut accel, transform) in circle_query.iter_mut() {
+        if transform.translation.x < x_min || transform.translation.x > x_max {
+            accel.horizontal = 0.;
+        };
+
+        if transform.translation.y < y_min || transform.translation.y > y_max {
+            accel.vertical = 0.;
+        };
     }
 }
