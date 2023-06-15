@@ -3,7 +3,8 @@ use bevy::{prelude::*, sprite::MaterialMesh2dBundle, window::PrimaryWindow};
 const CIRCLE_RADIUS: f32 = 32.;
 const CIRCLE_SPEED_MULTIPLIER: f32 = 32.;
 const WALL_ELASTICITY: f32 = 0.80;
-const CURSOR_FORCE: f32 = 0.01;
+const CURSOR_FORCE: f32 = 0.1;
+const GRAVITY_MULTIPLIER: f32 = 3.;
 
 fn main() {
     App::new()
@@ -11,7 +12,7 @@ fn main() {
         .add_plugin(CirclePlugin)
         .add_startup_system(spawn_camera)
         .add_system(cursor_force)
-        .add_system(move_in_monitor_space)
+        //.add_system(move_in_monitor_space)
         .run();
 }
 
@@ -80,7 +81,7 @@ fn circle_movement(
 
 fn gravity(mut circle_query: Query<&mut Acceleration, With<Circle>>, time: Res<Time>) {
     for mut acceleration in circle_query.iter_mut() {
-        acceleration.vertical -= 9.81 * time.delta_seconds();
+        acceleration.vertical -= 9.81 * time.delta_seconds() * GRAVITY_MULTIPLIER;
     }
 }
 
